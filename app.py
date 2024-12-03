@@ -38,13 +38,14 @@ async def vocabs(request: Request):
     search = request.query_params.get('q')
     with Session(engine) as session:
         if search is not None:
-            vocabs_set = session.exec(select(Vocab).where(or_(
+            stmt = select(Vocab).where(or_(
                 col(Vocab.word).icontains(search),
                 col(Vocab.context).icontains(search),
                 col(Vocab.source).icontains(search),
-            ))).all()
+            ))
         else:
-            vocabs_set = session.exec(select(Vocab)).all()
+            stmt = select(Vocab)
+        vocabs_set = session.exec(stmt).all()
     return templates.TemplateResponse(request, 'index.html', {'vocabs': vocabs_set})
 
 
