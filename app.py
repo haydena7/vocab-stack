@@ -67,6 +67,7 @@ async def vocabs_new(request: Request):
                 return RedirectResponse(url='/vocabs', status_code=303)
             except Exception as e:
                 session.rollback()
+                print(f'An error occurred: {e}')
                 return templates.TemplateResponse(request, 'new.html', {'vocab': v})
 
 
