@@ -48,9 +48,33 @@ async def vocabs(request: Request):
     return templates.TemplateResponse(request, 'index.html', {'vocabs': vocabs_set})
 
 
+async def vocabs_new_get(request: Request):
+    return templates.TemplateResponse(request, 'new.html', {'vocab': Vocab()})
+
+
+async def vocabs_new(request: Request):
+    async with request.form() as form:
+        with Session(engine) as session:
+            v = Vocab(
+                word=form.get('word'),
+                context=form.get('context'),
+                source=form.get('source')
+            )
+            try:
+                session.add(v)
+                session.commit()
+                # IMPLEMENT flash('Created New Vocab!')
+                return RedirectResponse(url='/vocabs', status_code=303)
+            except Exception as e:
+                session.rollback()
+                return templates.TemplateResponse(request, 'new.html', {'vocab': v})
+
+
 routes = [
     Route('/', homepage),
     Route('/vocabs', vocabs),
+    Route('/vocabs/new', vocabs_new_get, methods=['GET']),
+    Route('/vocabs/new', vocabs_new, methods=['POST']),
     Mount('/static', StaticFiles(directory='static'), name='static'),
 ]
 
