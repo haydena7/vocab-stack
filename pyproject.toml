@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "jinja2>=3.1.4",
     "sqlmodel>=0.0.22",
     "starlette>=0.41.3",
     "uvicorn>=0.32.1",
