@@ -1,0 +1,34 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+<form action="/vocabs" method="get" class="tool-bar">
+    <label for="search">Search Term</label>
+    <input id="search" type="search" name="q" value="{{ request.query_params.get('q') or '' }}"/>
+    <input type="submit" value="Search"/>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>Word</th>
+            <th>Context</th>
+            <th>Source</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for vocab in vocabs %}
+        <tr>
+            <td>{{ vocab.word }}</td>
+            <td>{{ vocab.context }}</td>
+            <td>{{ vocab.source }}</td>
+            <td><a href="/vocabs/{{ vocab.id }}/edit">Edit</a><a href="/vocabs/{{ vocab.id }}">View</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<p>
+    <a href="/vocabs/new">Add Vocab</a>
+</p>
+
+{% endblock %}
