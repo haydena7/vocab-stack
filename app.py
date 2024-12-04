@@ -107,6 +107,22 @@ async def vocabs_edit_post(request: Request):
                 return templates.TemplateResponse(request, 'edit.html', {'vocab': v})
 
 
+async def vocabs_delete(request: Request):
+    vid = request.path_params['vocab_id']
+    with Session(engine) as session:
+        v = session.get(Vocab, vid)
+        try:
+            session.delete(v)
+            session.commit()
+            # IMPLEMENT flash('Deleted Vocab!')
+            return RedirectResponse(url='/vocabs', status_code=303)
+        except Exception as e:
+            # Q: is a try-except block necessary for deletion ?
+            session.rollback()
+            print(f'An error occurred: {e}')
+            return RedirectResponse(url='/vocabs', status_code=303)
+
+
 routes = [
     Route('/', homepage),
     Route('/vocabs', vocabs),
@@ -115,6 +131,7 @@ routes = [
     Route('/vocabs/{vocab_id:int}', vocabs_view),
     Route('/vocabs/{vocab_id:int}/edit', vocabs_edit_get, methods=['GET']),
     Route('/vocabs/{vocab_id:int}/edit', vocabs_edit_post, methods=['POST']),
+    Route('/vocabs/{vocab_id:int}/delete', vocabs_delete, methods=['POST']),
     Mount('/static', StaticFiles(directory='static'), name='static'),
 ]
 
