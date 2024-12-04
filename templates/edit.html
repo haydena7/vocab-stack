@@ -9,6 +9,7 @@
             <label for="word">Word</label>
             <input name="word" id="word" type="text"
                    hx-get="/vocabs/{{ vocab.id }}/word" hx-target="next .error"
+                   hx-trigger="change, keyup delay:200ms"
                    placeholder="Word" value="{{ vocab.word }}">
             <span class="error">Foo ...</span>
         </p>
