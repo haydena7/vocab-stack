@@ -72,11 +72,20 @@ async def vocabs_new(request: Request):
                 return templates.TemplateResponse(request, 'new.html', {'vocab': v})
 
 
+async def vocabs_view(request: Request):
+    vid = request.path_params['vocab_id']
+    # use .get() on path_params to handle None exception ?
+    with Session(engine) as session:
+        v = session.get(Vocab, vid)
+    return templates.TemplateResponse(request, 'show.html', {'vocab': v})
+
+
 routes = [
     Route('/', homepage),
     Route('/vocabs', vocabs),
     Route('/vocabs/new', vocabs_new_get, methods=['GET']),
     Route('/vocabs/new', vocabs_new, methods=['POST']),
+    Route('/vocabs/{vocab_id:int}', vocabs_view),
     Mount('/static', StaticFiles(directory='static'), name='static'),
 ]
 
