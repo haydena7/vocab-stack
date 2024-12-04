@@ -80,12 +80,41 @@ async def vocabs_view(request: Request):
     return templates.TemplateResponse(request, 'show.html', {'vocab': v})
 
 
+async def vocabs_edit_get(request: Request):
+    vid = request.path_params['vocab_id']
+    # use .get() on path_params to handle None exception ?
+    with Session(engine) as session:
+        v = session.get(Vocab, vid)
+    return templates.TemplateResponse(request, 'edit.html', {'vocab': v})
+
+
+async def vocabs_edit_post(request: Request):
+    vid = request.path_params['vocab_id']
+    async with request.form() as form:
+        with Session(engine) as session:
+            v = session.get(Vocab, vid)
+            v.word = form.get('word')
+            v.context = form.get('context')
+            v.source = form.get('source')
+            try:
+                session.add(v)
+                session.commit()
+                # IMPLEMENT flash('Updated Vocab!')
+                return RedirectResponse(url='/vocabs/'+str(vid), status_code=303)
+            except Exception as e:
+                session.rollback()
+                print(f'An error occurred: {e}')
+                return templates.TemplateResponse(request, 'edit.html', {'vocab': v})
+
+
 routes = [
     Route('/', homepage),
     Route('/vocabs', vocabs),
     Route('/vocabs/new', vocabs_new_get, methods=['GET']),
     Route('/vocabs/new', vocabs_new, methods=['POST']),
     Route('/vocabs/{vocab_id:int}', vocabs_view),
+    Route('/vocabs/{vocab_id:int}/edit', vocabs_edit_get, methods=['GET']),
+    Route('/vocabs/{vocab_id:int}/edit', vocabs_edit_post, methods=['POST']),
     Mount('/static', StaticFiles(directory='static'), name='static'),
 ]
 

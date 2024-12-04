@@ -1,0 +1,32 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+<form action="/vocabs/{{ vocab.id }}/edit" method="post">
+    <fieldset>
+        <legend>Vocab Values</legend>
+        <p>
+            <label for="word">Word</label>
+            <input name="word" id="word" type="text" placeholder="Word" value="{{ vocab.word }}">
+        </p>
+        <p>
+            <label for="context">Context</label>
+            <input name="context" id="context" type="text" placeholder="Context" value="{{ vocab.context }}">
+        </p>
+        <p>
+            <label for="source">Source</label>
+            <input name="source" id="source" type="text" placeholder="Source" value="{{ vocab.source }}">
+        </p>
+        <button>Save</button>
+    </fieldset>
+</form>
+
+<form action="/vocabs/{{ vocab.id }}/delete" method="post">
+    <button>Delete Vocab</button>
+</form>
+
+<p>
+    <a href="/vocabs/">Back</a>
+</p>
+
+{% endblock %}
