@@ -3,7 +3,7 @@ from typing import Optional
 from starlette.applications import Starlette
 from starlette.routing import Route, Mount
 from starlette.requests import Request
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, PlainTextResponse
 from starlette.templating import Jinja2Templates
 from starlette.staticfiles import StaticFiles
 from sqlmodel import Field, Session, SQLModel, or_, create_engine, select, col
@@ -123,6 +123,22 @@ async def vocabs_delete(request: Request):
             return RedirectResponse(url='/vocabs', status_code=303)
 
 
+async def vocabs_word_get(request: Request):
+    word = request.query_params.get('word')
+    candidate = Vocab(word=word)
+    if is_unique(candidate):
+        return PlainTextResponse('')
+    else:
+        return PlainTextResponse('Word Must Be Unique')
+
+
+def is_unique(candidate: Vocab):
+    with Session(engine) as session:
+        # Q: add try-except block ?
+        existing = session.exec(select(Vocab).where(Vocab.word == candidate.word)).first()
+        return existing is None
+
+
 routes = [
     Route('/', homepage),
     Route('/vocabs', vocabs),
@@ -132,6 +148,7 @@ routes = [
     Route('/vocabs/{vocab_id:int}/edit', vocabs_edit_get, methods=['GET']),
     Route('/vocabs/{vocab_id:int}/edit', vocabs_edit_post, methods=['POST']),
     Route('/vocabs/{vocab_id:int}', vocabs_delete, methods=['DELETE']),
+    Route('/vocabs/{vocab_id:int}/word', vocabs_word_get),
     Mount('/static', StaticFiles(directory='static'), name='static'),
 ]
 
