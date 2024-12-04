@@ -11,7 +11,7 @@ from sqlmodel import Field, Session, SQLModel, or_, create_engine, select, col
 
 class Vocab(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    word: str = Field(index=True)
+    word: str = Field(unique=True, index=True)
     context: Optional[str] = None
     source: Optional[str] = None
     freq: Optional[float] = Field(default=None, index=True)  # ¿data type correct?
