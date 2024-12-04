@@ -131,7 +131,7 @@ routes = [
     Route('/vocabs/{vocab_id:int}', vocabs_view),
     Route('/vocabs/{vocab_id:int}/edit', vocabs_edit_get, methods=['GET']),
     Route('/vocabs/{vocab_id:int}/edit', vocabs_edit_post, methods=['POST']),
-    Route('/vocabs/{vocab_id:int}/delete', vocabs_delete, methods=['POST']),
+    Route('/vocabs/{vocab_id:int}', vocabs_delete, methods=['DELETE']),
     Mount('/static', StaticFiles(directory='static'), name='static'),
 ]
 
