@@ -1,12 +1,12 @@
 from typing import Optional
 
+from sqlmodel import Field, Session, SQLModel, col, create_engine, func, or_, select
 from starlette.applications import Starlette
-from starlette.routing import Route, Mount
 from starlette.requests import Request
-from starlette.responses import RedirectResponse, PlainTextResponse
-from starlette.templating import Jinja2Templates
+from starlette.responses import PlainTextResponse, RedirectResponse
+from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
-from sqlmodel import Field, Session, SQLModel, or_, create_engine, select, col
+from starlette.templating import Jinja2Templates
 
 
 PAGE_SIZE = 10
@@ -30,6 +30,12 @@ def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
 
 
+def count_rows(session: Session, model_class: SQLModel):
+    stmt = select(func.count()).select_from(model_class)
+    count = session.exec(stmt).first()
+    return count
+
+
 templates = Jinja2Templates(directory='templates')
 
 
@@ -41,6 +47,8 @@ async def vocabs(request: Request):
     search = request.query_params.get('q')
     page = int(request.query_params.get('page', 1))
     with Session(engine) as session:
+        count = count_rows(session, Vocab)
+        context = {'page': page, 'count': count}
         if search is not None:
             stmt = select(Vocab).where(or_(
                 col(Vocab.word).icontains(search),
@@ -48,13 +56,15 @@ async def vocabs(request: Request):
                 col(Vocab.source).icontains(search),
             ))
             vocabs_set = session.exec(stmt).all()
+            context['vocabs'] = vocabs_set
             if request.headers.get('HX-Trigger') == 'search':
-                return templates.TemplateResponse(request, 'rows.html', {'vocabs': vocabs_set, 'page': page})
+                return templates.TemplateResponse(request, 'rows.html', context)
         else:
             offset = (page - 1) * PAGE_SIZE
             stmt = select(Vocab).offset(offset).limit(PAGE_SIZE)
             vocabs_set = session.exec(stmt).all()
-    return templates.TemplateResponse(request, 'index.html', {'vocabs': vocabs_set, 'page': page})
+            context['vocabs'] = vocabs_set
+    return templates.TemplateResponse(request, 'index.html', context)
 
 
 async def vocabs_new_get(request: Request):
