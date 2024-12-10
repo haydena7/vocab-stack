@@ -125,7 +125,8 @@ async def vocabs_delete(request: Request):
 
 async def vocabs_word_get(request: Request):
     word = request.query_params.get('word')
-    candidate = Vocab(word=word)
+    vid = request.path_params['vocab_id']
+    candidate = Vocab(id=vid, word=word)
     if is_unique(candidate):
         return PlainTextResponse('')
     else:
@@ -135,7 +136,11 @@ async def vocabs_word_get(request: Request):
 def is_unique(candidate: Vocab):
     with Session(engine) as session:
         # Q: add try-except block ?
-        existing = session.exec(select(Vocab).where(Vocab.word == candidate.word)).first()
+        stmt = select(Vocab).where(
+            Vocab.id != candidate.id,
+            Vocab.word == candidate.word
+        )
+        existing = session.exec(stmt).first()
         return existing is None
 
 
