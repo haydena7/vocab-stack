@@ -47,10 +47,14 @@ async def vocabs(request: Request):
                 col(Vocab.context).icontains(search),
                 col(Vocab.source).icontains(search),
             ))
+            vocabs_set = session.exec(stmt).all()
+            if request.headers.get('HX-Trigger') == 'search':
+                # TODO: ¿ do we need to handle (pass in) paging here ?
+                return templates.TemplateResponse(request, 'rows.html', {'vocabs': vocabs_set})
         else:
             offset = (page - 1) * PAGE_SIZE
             stmt = select(Vocab).offset(offset).limit(PAGE_SIZE)
-        vocabs_set = session.exec(stmt).all()
+            vocabs_set = session.exec(stmt).all()
     return templates.TemplateResponse(request, 'index.html', {'vocabs': vocabs_set, 'page': page})
 
 

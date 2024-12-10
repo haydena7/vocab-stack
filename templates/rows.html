@@ -1,0 +1,8 @@
+{% for vocab in vocabs %}
+    <tr>
+        <td>{{ vocab.word }}</td>
+        <td>{{ vocab.context }}</td>
+        <td>{{ vocab.source }}</td>
+        <td><a href="/vocabs/{{ vocab.id }}/edit">Edit</a><a href="/vocabs/{{ vocab.id }}">View</a></td>
+    </tr>
+{% endfor %}
