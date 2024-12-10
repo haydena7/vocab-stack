@@ -31,4 +31,15 @@
     <a href="/vocabs/new">Add Vocab</a>
 </p>
 
+<div>
+    <span style="float: right">
+        {% if page > 1 %}
+            <a href="/vocabs?page={{ page - 1 }}">Previous</a>
+        {% endif %}
+        {% if vocabs|length == 10 %}
+            <a href="/vocabs?page={{ page + 1 }}">Next</a>
+        {% endif %}
+    </span>
+</div>
+
 {% endblock %}

@@ -9,6 +9,9 @@ from starlette.staticfiles import StaticFiles
 from sqlmodel import Field, Session, SQLModel, or_, create_engine, select, col
 
 
+PAGE_SIZE = 10
+
+
 class Vocab(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     word: str = Field(unique=True, index=True)
@@ -36,6 +39,7 @@ async def homepage(request: Request):
 
 async def vocabs(request: Request):
     search = request.query_params.get('q')
+    page = int(request.query_params.get('page', 1))
     with Session(engine) as session:
         if search is not None:
             stmt = select(Vocab).where(or_(
@@ -44,9 +48,10 @@ async def vocabs(request: Request):
                 col(Vocab.source).icontains(search),
             ))
         else:
-            stmt = select(Vocab)
+            offset = (page - 1) * PAGE_SIZE
+            stmt = select(Vocab).offset(offset).limit(PAGE_SIZE)
         vocabs_set = session.exec(stmt).all()
-    return templates.TemplateResponse(request, 'index.html', {'vocabs': vocabs_set})
+    return templates.TemplateResponse(request, 'index.html', {'vocabs': vocabs_set, 'page': page})
 
 
 async def vocabs_new_get(request: Request):
