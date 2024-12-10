@@ -30,6 +30,17 @@ def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
 
 
+def is_unique(candidate: Vocab):
+    with Session(engine) as session:
+        # TODO: add try-except block ?
+        stmt = select(Vocab).where(
+            Vocab.id != candidate.id,
+            Vocab.word == candidate.word
+        )
+        existing = session.exec(stmt).first()
+        return existing is None
+
+
 def count_rows(session: Session, model_class: SQLModel):
     stmt = select(func.count()).select_from(model_class)
     count = session.exec(stmt).first()
@@ -47,8 +58,7 @@ async def vocabs(request: Request):
     search = request.query_params.get('q')
     page = int(request.query_params.get('page', 1))
     with Session(engine) as session:
-        count = count_rows(session, Vocab)
-        context = {'page': page, 'count': count}
+        context = {'page': page}
         if search is not None:
             stmt = select(Vocab).where(or_(
                 col(Vocab.word).icontains(search),
@@ -151,15 +161,10 @@ async def vocabs_word_get(request: Request):
         return PlainTextResponse('Word Must Be Unique')
 
 
-def is_unique(candidate: Vocab):
+async def vocabs_count(request: Request):
     with Session(engine) as session:
-        # Q: add try-except block ?
-        stmt = select(Vocab).where(
-            Vocab.id != candidate.id,
-            Vocab.word == candidate.word
-        )
-        existing = session.exec(stmt).first()
-        return existing is None
+        count = count_rows(session, Vocab)
+    return PlainTextResponse(f'({count} total Vocabs)')
 
 
 routes = [
@@ -172,6 +177,7 @@ routes = [
     Route('/vocabs/{vocab_id:int}/edit', vocabs_edit_post, methods=['POST']),
     Route('/vocabs/{vocab_id:int}', vocabs_delete, methods=['DELETE']),
     Route('/vocabs/{vocab_id:int}/word', vocabs_word_get),
+    Route('/vocabs/count', vocabs_count),
     Mount('/static', StaticFiles(directory='static'), name='static'),
 ]
 
