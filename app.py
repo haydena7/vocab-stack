@@ -91,23 +91,20 @@ async def vocabs_new_get(request: Request):
     return templates.TemplateResponse(request, 'new.html', {'vocab': Vocab()})
 
 
-async def vocabs_new(request: Request):
+async def vocabs_new_post(request: Request):
     async with request.form() as form:
-        with Session(engine) as session:
-            v = Vocab(
-                word=form.get('word'),
-                context=form.get('context'),
-                source=form.get('source')
-            )
-            try:
-                session.add(v)
-                session.commit()
-                # IMPLEMENT flash('Created New Vocab!')
-                return RedirectResponse(url='/vocabs', status_code=303)
-            except Exception as e:
-                session.rollback()
-                print(f'An error occurred: {e}')
-                return templates.TemplateResponse(request, 'new.html', {'vocab': v})
+        new_fields = {key: form[key] for key in form.keys()}
+        new_vocab = Vocab(**new_fields)
+    with Session(engine) as session:
+        try:
+            session.add(new_vocab)
+            session.commit()
+            # TODO: flash('Created New Vocab!')
+            return RedirectResponse(url='/vocabs', status_code=303)
+        except Exception as e:
+            session.rollback()
+            print(f'An error occurred: {e}')
+            return templates.TemplateResponse(request, 'new.html', {'vocab': new_vocab})
 
 
 async def vocabs_view(request: Request):
@@ -194,7 +191,7 @@ routes = [
     Route('/', homepage),
     Route('/vocabs', vocabs),
     Route('/vocabs/new', vocabs_new_get, methods=['GET']),
-    Route('/vocabs/new', vocabs_new, methods=['POST']),
+    Route('/vocabs/new', vocabs_new_post, methods=['POST']),
     Route('/vocabs/{vocab_id:int}', vocabs_view),
     Route('/vocabs/{vocab_id:int}/edit', vocabs_edit_get, methods=['GET']),
     Route('/vocabs/{vocab_id:int}/edit', vocabs_edit_post, methods=['POST']),
