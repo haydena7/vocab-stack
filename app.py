@@ -30,15 +30,13 @@ def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
 
 
-def is_unique(candidate: Vocab):
-    with Session(engine) as session:
-        # TODO: add try-except block ?
-        stmt = select(Vocab).where(
-            Vocab.id != candidate.id,
-            Vocab.word == candidate.word
-        )
-        existing = session.exec(stmt).first()
-        return existing is None
+def is_unique(session: Session, candidate: Vocab) -> bool:
+    stmt = select(Vocab).where(
+        Vocab.id != candidate.id,
+        Vocab.word == candidate.word
+    )
+    existing = session.exec(stmt).first()
+    return existing is None
 
 
 def count_rows(session: Session, model_class: SQLModel):
@@ -157,13 +155,21 @@ async def vocabs_delete(request: Request):
 
 
 async def vocabs_word_get(request: Request):
+    """
+    Handles requests issued (on keyup event)
+    by `word` field input element in edit view.
+
+    Checks current field value for uniqueness and
+    returns an error message if duplicate detected.
+    """
     word = request.query_params.get('word')
     vid = request.path_params['vocab_id']
     candidate = Vocab(id=vid, word=word)
-    if is_unique(candidate):
-        return PlainTextResponse('')
-    else:
-        return PlainTextResponse('Word Must Be Unique')
+    with Session(engine) as session:
+        if is_unique(session, candidate):
+            return PlainTextResponse('')
+        else:
+            return PlainTextResponse('Word Must Be Unique')
 
 
 async def vocabs_count(request: Request):
