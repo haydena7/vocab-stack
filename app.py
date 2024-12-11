@@ -115,22 +115,25 @@ async def vocabs_edit_get(request: Request):
 
 
 async def vocabs_edit_post(request: Request):
-    vid = request.path_params['vocab_id']
+    vocab_id = request.path_params['vocab_id']
     async with request.form() as form:
-        with Session(engine) as session:
-            v = session.get(Vocab, vid)
-            v.word = form.get('word')
-            v.context = form.get('context')
-            v.source = form.get('source')
-            try:
-                session.add(v)
-                session.commit()
-                # IMPLEMENT flash('Updated Vocab!')
-                return RedirectResponse(url='/vocabs/'+str(vid), status_code=303)
-            except Exception as e:
-                session.rollback()
-                print(f'An error occurred: {e}')
-                return templates.TemplateResponse(request, 'edit.html', {'vocab': v})
+        edit_fields = {key: form[key] for key in form.keys()}
+        # TODO: validate `edit_fields` by constructing model instance ?
+    with Session(engine) as session:
+        db_vocab = session.get(Vocab, vocab_id)
+        if not db_vocab:
+            raise HTTPException(status_code=404, detail='Vocab not found')
+        db_vocab.sqlmodel_update(edit_fields)
+        # TODO: implement error messages / exception handling
+        try:
+            session.add(db_vocab)
+            session.commit()
+            # TODO: flash('Updated Vocab!')
+            return RedirectResponse(url=f'/vocabs/{vocab_id}', status_code=303)
+        except Exception as e:
+            session.rollback()
+            print(f'An error occurred: {e}')
+            return templates.TemplateResponse(request, 'edit.html', {'vocab': db_vocab})
 
 
 async def vocabs_delete(request: Request):
