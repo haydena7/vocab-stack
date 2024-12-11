@@ -2,12 +2,12 @@ from typing import Optional
 
 from sqlmodel import Field, Session, SQLModel, col, create_engine, func, or_, select
 from starlette.applications import Starlette
+from starlette.exceptions import HTTPException
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse, RedirectResponse
 from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
-
 
 PAGE_SIZE = 10
 
@@ -137,21 +137,17 @@ async def vocabs_delete(request: Request):
     vid = request.path_params['vocab_id']
     with Session(engine) as session:
         v = session.get(Vocab, vid)
-        try:
-            session.delete(v)
-            session.commit()
-            if request.headers.get('HX-Trigger') == 'delete-btn':
-                # from delete button in edit view
-                # TODO implement flash('Deleted Vocab!')
-                return RedirectResponse(url='/vocabs', status_code=303)
-            else:
-                # from inline delete link in index view
-                return PlainTextResponse('')
-        except Exception as e:
-            # Q: is a try-except block necessary for deletion ?
-            session.rollback()
-            print(f'An error occurred: {e}')
+        if not v:
+            raise HTTPException(status_code=404, detail='Vocab not found')
+        session.delete(v)
+        session.commit()
+        if request.headers.get('HX-Trigger') == 'delete-btn':
+            # issued by delete button in edit view
+            # TODO implement flash('Deleted Vocab!')
             return RedirectResponse(url='/vocabs', status_code=303)
+        else:
+            # issued by inline delete link in index view
+            return PlainTextResponse('')
 
 
 async def vocabs_word_get(request: Request):
