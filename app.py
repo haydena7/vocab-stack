@@ -142,8 +142,13 @@ async def vocabs_delete(request: Request):
         try:
             session.delete(v)
             session.commit()
-            # IMPLEMENT flash('Deleted Vocab!')
-            return RedirectResponse(url='/vocabs', status_code=303)
+            if request.headers.get('HX-Trigger') == 'delete-btn':
+                # from delete button in edit view
+                # TODO implement flash('Deleted Vocab!')
+                return RedirectResponse(url='/vocabs', status_code=303)
+            else:
+                # from inline delete link in index view
+                return PlainTextResponse('')
         except Exception as e:
             # Q: is a try-except block necessary for deletion ?
             session.rollback()
@@ -162,6 +167,7 @@ async def vocabs_word_get(request: Request):
 
 
 async def vocabs_count(request: Request):
+    # TODO does not update with inline delete functionality
     with Session(engine) as session:
         count = count_rows(session, Vocab)
     return PlainTextResponse(f'({count} total Vocabs)')
