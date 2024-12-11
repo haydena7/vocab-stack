@@ -30,6 +30,24 @@ def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
 
 
+def search_db(session: Session, search_term: str):
+    # TODO: make search "accent-insensitive" (¿"collation"?)
+    stmt = select(Vocab).where(or_(
+                col(Vocab.word).icontains(search_term),
+                col(Vocab.context).icontains(search_term),
+                col(Vocab.source).icontains(search_term),
+            ))
+    vocabs_set = session.exec(stmt).all()
+    return vocabs_set
+
+
+def get_page_rows(session: Session, page: int):
+    offset = (page - 1) * PAGE_SIZE
+    stmt = select(Vocab).offset(offset).limit(PAGE_SIZE)
+    vocabs_set = session.exec(stmt).all()
+    return vocabs_set
+
+
 def is_unique(session: Session, candidate: Vocab) -> bool:
     stmt = select(Vocab).where(
         Vocab.id != candidate.id,
@@ -53,24 +71,18 @@ async def homepage(request: Request):
 
 
 async def vocabs(request: Request):
-    search = request.query_params.get('q')
+    search_term = request.query_params.get('q')
     page = int(request.query_params.get('page', 1))
     with Session(engine) as session:
         context = {'page': page}
-        if search is not None:
-            stmt = select(Vocab).where(or_(
-                col(Vocab.word).icontains(search),
-                col(Vocab.context).icontains(search),
-                col(Vocab.source).icontains(search),
-            ))
-            vocabs_set = session.exec(stmt).all()
+        if search_term is not None:
+            vocabs_set = search_db(session, search_term)
             context['vocabs'] = vocabs_set
             if request.headers.get('HX-Trigger') == 'search':
+                # triggered by "active search" event
                 return templates.TemplateResponse(request, 'rows.html', context)
         else:
-            offset = (page - 1) * PAGE_SIZE
-            stmt = select(Vocab).offset(offset).limit(PAGE_SIZE)
-            vocabs_set = session.exec(stmt).all()
+            vocabs_set = get_page_rows(session, page)
             context['vocabs'] = vocabs_set
     return templates.TemplateResponse(request, 'index.html', context)
 
