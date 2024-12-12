@@ -187,6 +187,24 @@ async def vocabs_count(request: Request):
     return PlainTextResponse(f'({count} total Vocabs)')
 
 
+async def vocabs_delete_all(request: Request):
+    PAGE = 1  # TODO: inelegant, plz fix
+    context = {'page': PAGE}
+    async with request.form() as form:
+        vocab_ids = [int(vid) for vid in form.getlist('selected_vocab_ids')]
+    with Session(engine) as session:
+        for vocab_id in vocab_ids:
+            vocab = session.get(Vocab, vocab_id)
+            if not vocab:
+                raise HTTPException(status_code=404, detail='Vocab not found')
+            session.delete(vocab)
+            session.commit()
+        # TODO flash('Deleted Vocabs!')
+        vocabs_set = get_page_rows(session, PAGE)
+        context['vocabs'] = vocabs_set
+    return templates.TemplateResponse(request, 'index.html', context)
+
+
 routes = [
     Route('/', homepage),
     Route('/vocabs', vocabs),
@@ -198,6 +216,7 @@ routes = [
     Route('/vocabs/{vocab_id:int}', vocabs_delete, methods=['DELETE']),
     Route('/vocabs/{vocab_id:int}/word', vocabs_word_get),
     Route('/vocabs/count', vocabs_count),
+    Route('/vocabs', vocabs_delete_all, methods=['DELETE']),
     Mount('/static', StaticFiles(directory='static'), name='static'),
 ]
 
