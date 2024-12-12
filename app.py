@@ -8,6 +8,7 @@ from starlette.responses import PlainTextResponse, RedirectResponse
 from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
+from wordfreq import zipf_frequency
 
 PAGE_SIZE = 10
 
@@ -17,7 +18,7 @@ class Vocab(SQLModel, table=True):
     word: str = Field(unique=True, index=True)
     context: Optional[str] = None
     source: Optional[str] = None
-    freq: Optional[float] = Field(default=None, index=True)  # ¿data type correct?
+    freq: float = Field(index=True)
 
 
 sqlite_fname = 'database.db'
@@ -36,14 +37,14 @@ def search_db(session: Session, search_term: str):
                 col(Vocab.word).icontains(search_term),
                 col(Vocab.context).icontains(search_term),
                 col(Vocab.source).icontains(search_term),
-            ))
+            )).order_by(col(Vocab.freq).desc())
     vocabs_set = session.exec(stmt).all()
     return vocabs_set
 
 
 def get_page_rows(session: Session, page: int):
     offset = (page - 1) * PAGE_SIZE
-    stmt = select(Vocab).offset(offset).limit(PAGE_SIZE)
+    stmt = select(Vocab).order_by(col(Vocab.freq).desc()).offset(offset).limit(PAGE_SIZE)
     vocabs_set = session.exec(stmt).all()
     return vocabs_set
 
@@ -94,7 +95,8 @@ async def vocabs_new_get(request: Request):
 async def vocabs_new_post(request: Request):
     async with request.form() as form:
         new_fields = {key: form[key] for key in form.keys()}
-        new_vocab = Vocab(**new_fields)
+    new_fields['freq'] = zipf_frequency(new_fields['word'], 'es')
+    new_vocab = Vocab(**new_fields)
     with Session(engine) as session:
         try:
             session.add(new_vocab)
@@ -132,6 +134,9 @@ async def vocabs_edit_post(request: Request):
         db_vocab = session.get(Vocab, vocab_id)
         if not db_vocab:
             raise HTTPException(status_code=404, detail='Vocab not found')
+        if db_vocab.word != edit_fields['word']:
+            # word changed; update frequency
+            edit_fields['freq'] = zipf_frequency(edit_fields['word'], 'es')
         db_vocab.sqlmodel_update(edit_fields)
         # TODO: implement error messages / exception handling
         try:

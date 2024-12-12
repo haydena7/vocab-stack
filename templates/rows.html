@@ -4,6 +4,7 @@
         <td>{{ vocab.word }}</td>
         <td>{{ vocab.context }}</td>
         <td>{{ vocab.source }}</td>
+        <td>{{ "%.2f"|format(vocab.freq) }}</td>
         <td>
             <a href="/vocabs/{{ vocab.id }}/edit">Edit</a>
             <a href="/vocabs/{{ vocab.id }}">View</a>

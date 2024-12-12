@@ -24,6 +24,7 @@
                 <th>Word</th>
                 <th>Context</th>
                 <th>Source</th>
+                <th>Zipf</th>
                 <th></th>
             </tr>
         </thead>
@@ -31,7 +32,7 @@
             {% include 'rows.html' %}
             {% if vocabs|length == 10 %}
                 <tr>
-                    <td colspan="5" style="text-align: center">
+                    <td colspan="6" style="text-align: center">
                         <span hx-target="closest tr"
                                 hx-trigger="revealed"
                                 hx-swap="outerHTML"
