@@ -1,0 +1,7 @@
+<input name="word" id="word" type="text"
+       hx-get="/vocabs/{{ id }}/word" hx-target="#word-container"
+       hx-trigger="change, keyup delay:200ms changed"
+       placeholder="Word" value="{{ word }}"
+       aria-invalid="{{ invalid }}"
+       aria-describedby="valid-helper">
+<small id="valid-helper">{{ helper }}</small>

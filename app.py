@@ -178,11 +178,14 @@ async def vocabs_word_get(request: Request):
     word = request.query_params.get('word')
     vid = request.path_params['vocab_id']
     candidate = Vocab(id=vid, word=word)
+    invalid = 'true'
+    helper = 'Word must be unique!'
     with Session(engine) as session:
         if is_unique(session, candidate):
-            return PlainTextResponse('')
-        else:
-            return PlainTextResponse('Word Must Be Unique')
+            invalid = 'false'
+            helper = ''
+    context = {'id': vid, 'word': word, 'invalid': invalid, 'helper': helper}
+    return templates.TemplateResponse(request, 'word.html', context)
 
 
 async def vocabs_count(request: Request):
