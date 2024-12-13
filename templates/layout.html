@@ -1,19 +1,23 @@
 <!doctype html>
 <html lang="">
     <head>
-        <title>Vocab Stack</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="color-scheme" content="light dark">
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.cyan.min.css"
+        >
         <link rel="stylesheet" href="/static/site.css">
         <script src="/static/js/htmx-1.8.0.js"></script>
+        <title>Vocab Stack</title>
     </head>
     <body hx-boost="true">
-        <main>
-            <header>
-                <h1>
-                    <all-caps>vocab-stack.app</all-caps>
-                    <sub-title>Vocab Stack Prototype</sub-title>
-                </h1>
-            </header>
+        <header></header>
+        <main class="container">
+            <h1>Vocab Stack Prototype</h1>
             {% block content %}{% endblock %}
         </main>
+        <footer></footer>
     </body>
 </html>
