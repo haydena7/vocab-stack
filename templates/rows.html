@@ -1,6 +1,6 @@
 {% for vocab in vocabs %}
     <tr>
-        <td><input type="checkbox" name="selected_vocab_ids" value="{{ vocab.id }}"></td>
+        <th scope="row"><input type="checkbox" name="selected_vocab_ids" value="{{ vocab.id }}"></td>
         <td>{{ vocab.word }}</td>
         <td>{{ vocab.context }}</td>
         <td>{{ vocab.source }}</td>
