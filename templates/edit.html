@@ -4,23 +4,16 @@
 
 <form action="/vocabs/{{ vocab.id }}/edit" method="post">
     <fieldset>
-        <legend>Vocab Values</legend>
-        <p>
-            <label for="word">Word</label>
-            <input name="word" id="word" type="text"
-                   hx-get="/vocabs/{{ vocab.id }}/word" hx-target="next .error"
-                   hx-trigger="change, keyup delay:200ms changed"
-                   placeholder="Word" value="{{ vocab.word }}">
-            <span class="error">Foo ...</span>
-        </p>
-        <p>
-            <label for="context">Context</label>
-            <input name="context" id="context" type="text" placeholder="Context" value="{{ vocab.context }}">
-        </p>
-        <p>
-            <label for="source">Source</label>
-            <input name="source" id="source" type="text" placeholder="Source" value="{{ vocab.source }}">
-        </p>
+        <label for="word">Word</label>
+        <input name="word" id="word" type="text"
+                hx-get="/vocabs/{{ vocab.id }}/word" hx-target="next .error"
+                hx-trigger="change, keyup delay:200ms changed"
+                placeholder="Word" value="{{ vocab.word }}">
+        <span class="error">Foo ...</span>
+        <label for="context">Context</label>
+        <input name="context" id="context" type="text" placeholder="Context" value="{{ vocab.context }}">
+        <label for="source">Source</label>
+        <input name="source" id="source" type="text" placeholder="Source" value="{{ vocab.source }}">
         <button>Save</button>
     </fieldset>
 </form>
