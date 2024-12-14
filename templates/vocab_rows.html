@@ -3,11 +3,11 @@
 {% endfor %}
 
 {% if has_more %}
-    <tr id="replaceMe">
+    <tr id="replace-me">
         <th colspan="6" scope="row">
             <button id="load-more"
                     hx-get="/vocabs?last_freq={{ vocabs[-1].freq }}&last_id={{ vocabs[-1].id }}"
-                    hx-target="#replaceMe"
+                    hx-target="#replace-me"
                     hx-swap="outerHTML">
                 Load More
             </button>
