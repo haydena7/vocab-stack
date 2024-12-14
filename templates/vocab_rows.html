@@ -1,13 +1,14 @@
 {% for vocab in vocabs %}
     {% include 'vocab_row.html' %}
 {% endfor %}
+
 {% if has_more %}
-    <tr>
+    <tr id="replaceMe">
         <th colspan="6" scope="row">
             <button id="load-more"
-                    hx-target="closest tr"
-                    hx-swap="outerHTML"
-                    hx-get="/vocabs?last_freq={{ vocabs[-1].freq }}&last_id={{ vocabs[-1].id }}">
+                    hx-get="/vocabs?last_freq={{ vocabs[-1].freq }}&last_id={{ vocabs[-1].id }}"
+                    hx-target="#replaceMe"
+                    hx-swap="outerHTML">
                 Load More
             </button>
         </th>
