@@ -1,7 +1,18 @@
-<input name="word" id="word" type="text"
-       hx-get="/vocabs/{{ id }}/word" hx-target="#word-container"
-       hx-trigger="change, keyup delay:200ms changed"
-       placeholder="Word" value="{{ word }}"
-       aria-invalid="{{ invalid }}"
-       aria-describedby="valid-helper">
-<small id="valid-helper">{{ helper }}</small>
+{% if unique %}
+       <input name="word" id="word" type="text"
+              hx-get="/vocabs/{{ candidate.id }}/word" hx-target="#word-container"
+              hx-trigger="change, keyup delay:200ms changed"
+              placeholder="Word" value="{{ candidate.word }}">
+              
+       <button id="save-btn" hx-swap-oob="true">Save</button>
+{% else %}
+       <input name="word" id="word" type="text"
+              hx-get="/vocabs/{{ candidate.id }}/word" hx-target="#word-container"
+              hx-trigger="change, keyup delay:200ms changed"
+              placeholder="Word" value="{{ candidate.word }}"
+              aria-invalid="{{ invalid }}"
+              aria-describedby="valid-helper">
+       <small id="valid-helper">{{ helper }}</small>
+
+       <button id="save-btn" hx-swap-oob="true" disabled>Save</button>
+{% endif %}

@@ -84,8 +84,7 @@ def validate_uniqueness(session: Session, candidate: Vocab):
     existing = session.exec(stmt).first()
     unique = existing is None
     context = {
-        'id': candidate.id,
-        'word': candidate.word,
+        'candidate': candidate,
         'unique': unique,
         'invalid': 'false' if unique else 'true',
         'helper': '' if unique else 'Word must be unique!',
