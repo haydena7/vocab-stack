@@ -141,8 +141,10 @@ async def vocabs_new_get(request: Request):
 
 async def vocabs_new_post(request: Request):
     async with request.form() as form:
-        new_fields = {key: form[key] for key in form.keys()}
-    new_fields['freq'] = zipf(new_fields['word'])
+        new_fields = {k: v for k, v in form.items() if v}
+    if 'word' in new_fields:
+        # TODO: fix once validation strategy determined
+        new_fields['freq'] = zipf(new_fields['word'])
     new_vocab = Vocab(**new_fields)
     with Session(engine) as session:
         try:
