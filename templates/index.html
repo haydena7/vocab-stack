@@ -15,21 +15,28 @@
     <input type="submit" value="Search"/>
 </form>
 
-<table class="striped">
-    <thead>
-        <tr>
-            <th scope="col"></th>
-            <th scope="col">Word</th>
-            <th scope="col">Context</th>
-            <th scope="col">Source</th>
-            <th scope="col">Zipf</th>
-            <th scope="col"></th>
-        </tr>
-    </thead>
-    <tbody>
-        {% include 'vocab_rows.html' %}
-    </tbody>
-</table>
+<form id="checked-vocabs">
+    <table class="striped">
+        <thead>
+            <tr>
+                <th scope="col"></th>
+                <th scope="col">Word</th>
+                <th scope="col">Context</th>
+                <th scope="col">Source</th>
+                <th scope="col">Zipf</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% include 'vocab_rows.html' %}
+        </tbody>
+    </table>
+    <button hx-delete="/vocabs"
+            hx-target="body"
+            hx-confirm="Are you sure you want to delete these vocabs?">
+        Bulk Delete
+    </button>
+</form>
 
 <p>
     <a href="/vocabs/new">Add Vocab</a>
