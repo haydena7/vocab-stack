@@ -1,3 +1,4 @@
+from functools import partial
 from typing import Optional
 
 from sqlmodel import (
@@ -21,6 +22,10 @@ from starlette.templating import Jinja2Templates
 from wordfreq import zipf_frequency
 
 PAGE_SIZE = 10
+LANG = 'es'
+
+
+zipf = partial(zipf_frequency, lang=LANG)
 
 
 class Vocab(SQLModel, table=True):
@@ -137,7 +142,7 @@ async def vocabs_new_get(request: Request):
 async def vocabs_new_post(request: Request):
     async with request.form() as form:
         new_fields = {key: form[key] for key in form.keys()}
-    new_fields['freq'] = zipf_frequency(new_fields['word'], 'es')
+    new_fields['freq'] = zipf(new_fields['word'])
     new_vocab = Vocab(**new_fields)
     with Session(engine) as session:
         try:
@@ -178,7 +183,7 @@ async def vocabs_edit_post(request: Request):
             raise HTTPException(status_code=404, detail='Vocab not found')
         if db_vocab.word != edit_fields['word']:
             # word changed; update frequency
-            edit_fields['freq'] = zipf_frequency(edit_fields['word'], 'es')
+            edit_fields['freq'] = zipf((edit_fields['word']))
         db_vocab.sqlmodel_update(edit_fields)
         # TODO: implement error messages / exception handling
         try:
