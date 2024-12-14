@@ -76,13 +76,21 @@ def get_page(session: Session, cursor: tuple = None):
     return page, has_more
 
 
-def is_unique(session: Session, candidate: Vocab) -> bool:
+def validate_uniqueness(session: Session, candidate: Vocab):
     stmt = select(Vocab).where(
         Vocab.id != candidate.id,
         Vocab.word == candidate.word
     )
     existing = session.exec(stmt).first()
-    return existing is None
+    unique = existing is None
+    context = {
+        'id': candidate.id,
+        'word': candidate.word,
+        'unique': unique,
+        'invalid': 'false' if unique else 'true',
+        'helper': '' if unique else 'Word must be unique!',
+    }
+    return context
 
 
 def count_rows(session: Session, model_class: SQLModel):
@@ -204,22 +212,14 @@ async def vocabs_delete(request: Request):
 
 async def vocabs_word_get(request: Request):
     """
-    Handles requests issued (on keyup event)
-    by `word` field input element in edit view.
-
     Checks current field value for uniqueness and
     returns an error message if duplicate detected.
     """
     word = request.query_params.get('word')
-    vid = request.path_params['vocab_id']
-    candidate = Vocab(id=vid, word=word)
-    invalid = 'true'
-    helper = 'Word must be unique!'
+    id = request.path_params['vocab_id']
+    candidate = Vocab(id=id, word=word)
     with Session(engine) as session:
-        if is_unique(session, candidate):
-            invalid = 'false'
-            helper = ''
-    context = {'id': vid, 'word': word, 'invalid': invalid, 'helper': helper}
+        context = validate_uniqueness(session, candidate)
     return templates.TemplateResponse(request, 'word.html', context)
 
 
