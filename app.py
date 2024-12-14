@@ -219,10 +219,7 @@ async def vocab_word_validation(request: Request):
     candidate = Vocab(id=vid, word=word)
     with Session(engine) as session:
         context = validate_uniqueness(session, candidate)
-    # get validation type
-    # TODO: consolidate to one one template via macros
-    template = 'word_new.html' if 'new' in request.url.path else 'word_edit.html'
-    return templates.TemplateResponse(request, template, context)
+    return templates.TemplateResponse(request, 'word_validation.html', context)
 
 
 async def vocabs_count(request: Request):
