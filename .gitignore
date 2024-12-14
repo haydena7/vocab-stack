@@ -11,3 +11,6 @@ wheels/
 
 # SQLite database
 *.db
+
+# macOS system files
+.DS_Store
