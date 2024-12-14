@@ -63,7 +63,6 @@ def get_page(session: Session, cursor: tuple = None):
     """
     Cursor-based pagination
     """
-    print(f'GET_PAGE: cursor={cursor}')
     stmt = select(Vocab).order_by(col(Vocab.freq).desc(), Vocab.id)
     if cursor:
         last_freq, last_id = cursor
@@ -73,7 +72,6 @@ def get_page(session: Session, cursor: tuple = None):
         ))
     results = session.exec(stmt.limit(PAGE_SIZE + 1)).all()
     has_more  = True if len(results) > PAGE_SIZE else False
-    print(f'HAS MORE: {has_more}')
     page = results[:PAGE_SIZE]
     return page, has_more
 
@@ -104,7 +102,6 @@ async def vocabs(request: Request):
     search_term = request.query_params.get('q')
     with Session(engine) as session:
         if search_term is not None:
-            print('ENTERED SEARCH')
             vocabs_set = search_db(session, search_term)
             context = {'vocabs': vocabs_set, 'has_more': False}
             if request.headers.get('HX-Trigger') == 'search':
@@ -115,15 +112,12 @@ async def vocabs(request: Request):
                 return templates.TemplateResponse(request, 'index.html', context)
         if request.headers.get('HX-Trigger') == 'load-more':
             # triggered by "click to load"
-            print('ENTERED LOAD MORE')
             last_freq = request.query_params.get('last_freq')
             last_id = request.query_params.get('last_id')
             cursor = (float(last_freq), int(last_id))
             vocabs_set, has_more = get_page(session, cursor)
             context = {'vocabs': vocabs_set, 'has_more': has_more}
-            print(f'CONTEXT: {context}')
             return templates.TemplateResponse(request, 'vocab_rows.html', context)
-        print('ENTERED NORMAL (FULL PAGE) REQUEST')
         vocabs_set, has_more = get_page(session)
     context = {'vocabs': vocabs_set, 'has_more': has_more}
     return templates.TemplateResponse(request, 'index.html', context)
