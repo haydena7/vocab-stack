@@ -15,42 +15,37 @@
     <input type="submit" value="Search"/>
 </form>
 
-<form>
-    <table class="striped">
-        <thead>
-            <tr>
-                <th scope="col"></th>
-                <th scope="col">Word</th>
-                <th scope="col">Context</th>
-                <th scope="col">Source</th>
-                <th scope="col">Zipf</th>
-                <th scope="col"></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% include 'rows.html' %}
-            {% if vocabs|length == 10 %}
-                <tr>
-                    <td colspan="6" style="text-align: center">
-                        <span hx-target="closest tr"
-                                hx-trigger="revealed"
-                                hx-swap="outerHTML"
-                                hx-select="tbody > tr"
-                                hx-get="/vocabs?page={{ page + 1 }}">
-                                Loading More ...
-                        </span>
-                    </td>
-                </tr>
-            {% endif %}
-        </tbody>
-    </table>
-    <button
-        hx-delete="/vocabs"
-        hx-confirm="Are you sure you want to delete these vocabs?"
-        hx-target="body">
-        Delete Selected Vocabs
+<table class="striped">
+    <thead>
+        <tr>
+            <th scope="col"></th>
+            <th scope="col">Word</th>
+            <th scope="col">Context</th>
+            <th scope="col">Source</th>
+            <th scope="col">Zipf</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody id="vocabs-container">
+        {% for vocab in vocabs %}
+            {% include 'vocab_row.html' %}
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if has_more %}
+    <button id="load-more"
+            hx-get="/vocabs?last_freq={{ vocabs[-1].freq }}&last_id={{ vocabs[-1].id }}"
+            hx-target="#vocabs-container"
+            hx-swap="beforeend"
+            hx-indicator="#loading">
+        Load More Vocabs
     </button>
-</form>
+{% endif %}
+
+<div id="loading" class="htmx-indicator">
+	Loading...
+</div>
 
 <p>
     <a href="/vocabs/new">Add Vocab</a>

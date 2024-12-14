@@ -1,6 +1,16 @@
 from typing import Optional
 
-from sqlmodel import Field, Session, SQLModel, col, create_engine, func, or_, select
+from sqlmodel import (
+    Field,
+    Session,
+    SQLModel,
+    and_,
+    col,
+    create_engine,
+    func,
+    or_,
+    select,
+)
 from starlette.applications import Starlette
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
@@ -49,6 +59,25 @@ def get_page_rows(session: Session, page: int):
     return vocabs_set
 
 
+def get_page(session: Session, cursor: tuple = None):
+    """
+    Cursor-based pagination
+    """
+    print(f'GET_PAGE: cursor={cursor}')
+    stmt = select(Vocab).order_by(col(Vocab.freq).desc(), Vocab.id)
+    if cursor:
+        last_freq, last_id = cursor
+        stmt = stmt.where(or_(
+            Vocab.freq < last_freq,
+            and_(Vocab.freq == last_freq, Vocab.id < last_id)
+        ))
+    results = session.exec(stmt.limit(PAGE_SIZE + 1)).all()
+    has_more  = True if len(results) > PAGE_SIZE else False
+    print(f'HAS MORE: {has_more}')
+    page = results[:PAGE_SIZE]
+    return page, has_more
+
+
 def is_unique(session: Session, candidate: Vocab) -> bool:
     stmt = select(Vocab).where(
         Vocab.id != candidate.id,
@@ -73,19 +102,31 @@ async def homepage(request: Request):
 
 async def vocabs(request: Request):
     search_term = request.query_params.get('q')
-    page = int(request.query_params.get('page', 1))
     with Session(engine) as session:
-        context = {'page': page}
         if search_term is not None:
+            print('ENTERED SEARCH')
             vocabs_set = search_db(session, search_term)
-            context['vocabs'] = vocabs_set
+            context = {'vocabs': vocabs_set, 'has_more': False}
             if request.headers.get('HX-Trigger') == 'search':
-                # triggered by "active search" event
-                return templates.TemplateResponse(request, 'rows.html', context)
-        else:
-            vocabs_set = get_page_rows(session, page)
-            context['vocabs'] = vocabs_set
-    return templates.TemplateResponse(request, 'index.html', context)
+                # triggered by "active search"
+                return templates.TemplateResponse(request, 'vocab_rows.html', context)
+            else:
+                # triggered by traditional search
+                return templates.TemplateResponse(request, 'index.html', context)
+        if request.headers.get('HX-Trigger') == 'load-more':
+            # triggered by "click to load"
+            print('ENTERED LOAD MORE')
+            last_freq = request.query_params.get('last_freq')
+            last_id = request.query_params.get('last_id')
+            cursor = (float(last_freq), int(last_id))
+            vocabs_set, has_more = get_page(session, cursor)
+            context = {'vocabs': vocabs_set, 'has_more': has_more}
+            print(f'CONTEXT: {context}')
+            return templates.TemplateResponse(request, 'vocab_rows.html', context)
+        print('ENTERED NORMAL (FULL PAGE) REQUEST')
+        vocabs_set, has_more = get_page(session)
+    context = {'vocabs': vocabs_set, 'has_more': has_more}
+    return templates.TemplateResponse(request, 'index.html', context)   
 
 
 async def vocabs_new_get(request: Request):
