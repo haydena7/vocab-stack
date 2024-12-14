@@ -77,10 +77,10 @@ def get_page(session: Session, cursor: tuple = None):
 
 
 def validate_uniqueness(session: Session, candidate: Vocab):
-    stmt = select(Vocab).where(
-        Vocab.id != candidate.id,
-        Vocab.word == candidate.word
-    )
+    stmt = select(Vocab).where(Vocab.word == candidate.word)
+    if candidate.id is not None:
+        # edit (not new) validation
+        stmt = stmt.where(Vocab.id != candidate.id)
     existing = session.exec(stmt).first()
     unique = existing is None
     context = {
@@ -209,17 +209,20 @@ async def vocabs_delete(request: Request):
             return PlainTextResponse('')
 
 
-async def vocabs_word_get(request: Request):
+async def vocab_word_validation(request: Request):
     """
-    Checks current field value for uniqueness and
-    returns an error message if duplicate detected.
+    Checks current value of `word` field for uniqueness;
+    flags as invalid if duplicate detected.
     """
     word = request.query_params.get('word')
-    id = request.path_params['vocab_id']
-    candidate = Vocab(id=id, word=word)
+    vid = request.path_params.get('vocab_id')
+    candidate = Vocab(id=vid, word=word)
     with Session(engine) as session:
         context = validate_uniqueness(session, candidate)
-    return templates.TemplateResponse(request, 'word.html', context)
+    # get validation type
+    # TODO: consolidate to one one template via macros
+    template = 'word_new.html' if 'new' in request.url.path else 'word_edit.html'
+    return templates.TemplateResponse(request, template, context)
 
 
 async def vocabs_count(request: Request):
@@ -253,9 +256,10 @@ routes = [
     Route('/vocabs/{vocab_id:int}/edit', vocabs_edit_get, methods=['GET']),
     Route('/vocabs/{vocab_id:int}/edit', vocabs_edit_post, methods=['POST']),
     Route('/vocabs/{vocab_id:int}', vocabs_delete, methods=['DELETE']),
-    Route('/vocabs/{vocab_id:int}/word', vocabs_word_get),
+    Route('/vocabs/{vocab_id:int}/word', vocab_word_validation),
     Route('/vocabs/count', vocabs_count),
     Route('/vocabs', vocabs_delete_bulk, methods=['DELETE']),
+    Route('/vocabs/new/word', vocab_word_validation),
     Mount('/static', StaticFiles(directory='static'), name='static'),
 ]
 
