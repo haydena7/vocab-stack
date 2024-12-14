@@ -126,7 +126,7 @@ async def vocabs(request: Request):
         print('ENTERED NORMAL (FULL PAGE) REQUEST')
         vocabs_set, has_more = get_page(session)
     context = {'vocabs': vocabs_set, 'has_more': has_more}
-    return templates.TemplateResponse(request, 'index.html', context)   
+    return templates.TemplateResponse(request, 'index.html', context)
 
 
 async def vocabs_new_get(request: Request):

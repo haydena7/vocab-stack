@@ -27,25 +27,9 @@
         </tr>
     </thead>
     <tbody id="vocabs-container">
-        {% for vocab in vocabs %}
-            {% include 'vocab_row.html' %}
-        {% endfor %}
+        {% include 'vocab_rows.html' %}
     </tbody>
 </table>
-
-{% if has_more %}
-    <button id="load-more"
-            hx-get="/vocabs?last_freq={{ vocabs[-1].freq }}&last_id={{ vocabs[-1].id }}"
-            hx-target="#vocabs-container"
-            hx-swap="beforeend"
-            hx-indicator="#loading">
-        Load More Vocabs
-    </button>
-{% endif %}
-
-<div id="loading" class="htmx-indicator">
-	Loading...
-</div>
 
 <p>
     <a href="/vocabs/new">Add Vocab</a>

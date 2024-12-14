@@ -1,13 +1,15 @@
 {% for vocab in vocabs %}
     {% include 'vocab_row.html' %}
 {% endfor %}
-
 {% if has_more %}
-    <button id="load-more"
-            hx-get="/vocabs?last_freq={{ vocabs[-1].freq }}&last_id={{ vocabs[-1].id }}"
-            hx-target="#vocabs-container"
-            hx-swap="beforeend"
-            hx-indicator="#loading">
-        Load More Vocabs
-    </button>
+    <tr>
+        <th colspan="6" scope="row">
+            <button id="load-more"
+                    hx-target="closest tr"
+                    hx-swap="outerHTML"
+                    hx-get="/vocabs?last_freq={{ vocabs[-1].freq }}&last_id={{ vocabs[-1].id }}">
+                Load More
+            </button>
+        </th>
+    </th>
 {% endif %}
