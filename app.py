@@ -57,17 +57,7 @@ def search_db(session: Session, search_term: str):
     return vocabs_set
 
 
-def get_page_rows(session: Session, page: int):
-    offset = (page - 1) * PAGE_SIZE
-    stmt = select(Vocab).order_by(col(Vocab.freq).desc()).offset(offset).limit(PAGE_SIZE)
-    vocabs_set = session.exec(stmt).all()
-    return vocabs_set
-
-
 def get_page(session: Session, cursor: tuple = None):
-    """
-    Cursor-based pagination
-    """
     stmt = select(Vocab).order_by(col(Vocab.freq).desc(), Vocab.id)
     if cursor:
         last_freq, last_id = cursor
@@ -78,7 +68,8 @@ def get_page(session: Session, cursor: tuple = None):
     results = session.exec(stmt.limit(PAGE_SIZE + 1)).all()
     has_more  = True if len(results) > PAGE_SIZE else False
     page = results[:PAGE_SIZE]
-    return page, has_more
+    context = {'vocabs': page, 'has_more': has_more}
+    return context
 
 
 def validate_uniqueness(session: Session, candidate: Vocab):
@@ -127,11 +118,9 @@ async def vocabs(request: Request):
             last_freq = request.query_params.get('last_freq')
             last_id = request.query_params.get('last_id')
             cursor = (float(last_freq), int(last_id))
-            vocabs_set, has_more = get_page(session, cursor)
-            context = {'vocabs': vocabs_set, 'has_more': has_more}
+            context = get_page(session, cursor)
             return templates.TemplateResponse(request, 'vocab_rows.html', context)
-        vocabs_set, has_more = get_page(session)
-    context = {'vocabs': vocabs_set, 'has_more': has_more}
+        context = get_page(session)
     return templates.TemplateResponse(request, 'index.html', context)
 
 
@@ -246,8 +235,7 @@ async def vocabs_delete_bulk(request: Request):
             session.delete(vocab)
             session.commit()
         # TODO flash('Deleted Vocabs!')
-        vocabs_set, has_more = get_page(session)
-    context = {'vocabs': vocabs_set, 'has_more': has_more}
+        context = get_page(session)
     return templates.TemplateResponse(request, 'index.html', context)
 
 
