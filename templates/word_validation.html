@@ -6,7 +6,8 @@
        {% if not unique %}
        aria-invalid="{{ invalid }}"
        aria-describedby="valid-helper"
-       {% endif %}>
+       {% endif %}
+       required>
 
 {% if not unique %}
 <small id="valid-helper">{{ helper }}</small>

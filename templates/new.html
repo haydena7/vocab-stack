@@ -8,7 +8,8 @@
             <input name="word" id="word" type="text"
                    hx-get="/vocabs/new/word" hx-target="#word-container"
                    hx-trigger="change, keyup delay:200ms changed"
-                   placeholder="Word" value="{{ vocab.word or '' }}">
+                   placeholder="Word" value="{{ vocab.word or '' }}"
+                   required>
         </div>
         <input name="context" id="context" type="text" placeholder="Context" value="{{ vocab.context or '' }}">
         <input name="source" id="source" type="text" placeholder="Source" value="{{ vocab.source or '' }}">
