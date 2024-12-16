@@ -1,17 +1,4 @@
-<input name="word" id="word" type="text"
-       hx-get="{{ request.url.path }}"
-       hx-target="#word-container"
-       hx-trigger="change, keyup delay:200ms changed"
-       placeholder="Word" value="{{ candidate.word }}"
-       {% if not unique %}
-       aria-invalid="{{ invalid }}"
-       aria-describedby="valid-helper"
-       {% endif %}
-       required>
-
-{% if not unique %}
 <small id="valid-helper">{{ helper }}</small>
-{% endif %}
 
 <button id="save-btn"
         hx-swap-oob="true"

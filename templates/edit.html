@@ -5,13 +5,14 @@
 <form action="/vocabs/{{ vocab.id }}/edit" method="post">
     <fieldset>
         <label for="word">Word</label>
-        <div id="word-container">
-            <input name="word" id="word" type="text"
-                    hx-get="/vocabs/{{ vocab.id }}/word" hx-target="#word-container"
-                    hx-trigger="change, keyup delay:200ms changed"
-                    placeholder="Word" value="{{ vocab.word }}"
-                    required>
-        </div>
+        <input name="word" id="word" type="text"
+               hx-get="/vocabs/{{ vocab.id }}/word"
+               hx-target="#valid-helper"
+               hx-trigger="change, keyup delay:200ms changed"
+               hx-swap="outerHTML"
+               placeholder="Word" value="{{ vocab.word }}"
+               required>
+        <small id="valid-helper"></small>
         <label for="context">Context</label>
         <input name="context" id="context" type="text" placeholder="Context" value="{{ vocab.context }}">
         <label for="source">Source</label>
