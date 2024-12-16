@@ -1,3 +1,4 @@
+import json
 from datetime import date
 from functools import partial
 from typing import Optional
@@ -94,6 +95,16 @@ def count_rows(session: Session, model_class: SQLModel):
     stmt = select(func.count()).select_from(model_class)
     count = session.exec(stmt).first()
     return count
+
+
+def archive_to_json(session: Session, out_file: str = 'vocabs.json'):
+    # TODO: ¿ make async ?
+    rows = session.exec(select(Vocab)).all()
+    rows_dicts = [r.model_dump(mode='json') for r in rows]
+    with open(out_file, 'w', encoding='utf-8') as f:
+        # preserve human-readable int'l chars
+        json.dump(rows_dicts, f, indent=2, ensure_ascii=False)
+    raise NotImplementedError
 
 
 templates = Jinja2Templates(directory='templates')
