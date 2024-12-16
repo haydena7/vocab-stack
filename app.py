@@ -241,6 +241,35 @@ async def vocabs_delete_bulk(request: Request):
     return templates.TemplateResponse(request, 'index.html', context)
 
 
+async def start_archive(request: Request):
+    """
+    start the (async) archive process and pass {it /
+    its status} into the archive_ui template response
+    """
+    raise NotImplementedError
+
+
+async def archive_status(request: Request):
+    """
+    re-render archive_ui.html with the archive process status
+    """
+    raise NotImplementedError
+
+
+async def archive_content(request: Request):
+    """
+    send the file the archiver created down to the client
+    """
+    raise NotImplementedError
+
+
+async def reset_archive(request: Request):
+    """
+    reset the archive process and re-render archive_ui.html
+    """
+    raise NotImplementedError
+
+
 routes = [
     Route('/', homepage),
     Route('/vocabs', vocabs),
@@ -254,6 +283,10 @@ routes = [
     Route('/vocabs/count', vocabs_count),
     Route('/vocabs', vocabs_delete_bulk, methods=['DELETE']),
     Route('/vocabs/new/word', vocab_word_validation),
+    Route('/vocabs/archive', start_archive, methods=['POST']),
+    Route('/vocabs/archive', archive_status, methods=['GET']),
+    Route('/vocabs/archive', reset_archive, methods=['DELETE']),
+    Route('/vocabs/archive/file', archive_content),
     Mount('/static', StaticFiles(directory='static'), name='static'),
 ]
 
