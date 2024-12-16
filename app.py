@@ -1,3 +1,4 @@
+from datetime import date
 from functools import partial
 from typing import Optional
 
@@ -34,6 +35,7 @@ class Vocab(SQLModel, table=True):
     context: Optional[str] = None
     source: Optional[str] = None
     freq: float = Field(index=True)
+    created_at: date = Field(default_factory=date.today)
 
 
 sqlite_fname = 'database.db'
