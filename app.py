@@ -23,6 +23,8 @@ from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 from wordfreq import zipf_frequency
 
+from archiver_mock import Archiver
+
 PAGE_SIZE = 5
 LANG = 'es'
 
