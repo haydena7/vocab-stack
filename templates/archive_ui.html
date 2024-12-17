@@ -16,8 +16,9 @@
             </div>
         </div>
     {% elif archiver.status() == "Complete" %}
-        <a hx-boost="false" href="/vocabs/archive/file">
-            Archive ready! Click here to download. &downarrow;
+        <a hx-boost="false" href="/vocabs/archive/file"
+           _="on load click() me">
+            Archive downloading! Click here if the download does not start.
         </a>
         <button hx-delete="/vocabs/archive">Clear Download</button>
     {% endif %}
