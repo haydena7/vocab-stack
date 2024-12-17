@@ -17,7 +17,7 @@ from sqlmodel import (
 from starlette.applications import Starlette
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
-from starlette.responses import PlainTextResponse, RedirectResponse
+from starlette.responses import FileResponse, PlainTextResponse, RedirectResponse
 from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
@@ -122,6 +122,7 @@ async def vocabs(request: Request):
         if search_term is not None:
             vocabs_set = search_db(session, search_term)
             context = {'vocabs': vocabs_set, 'has_more': False}
+            context['archiver'] = Archiver.get()
             if request.headers.get('HX-Trigger') == 'search':
                 # triggered by "active search"
                 return templates.TemplateResponse(request, 'vocab_rows.html', context)
@@ -136,6 +137,7 @@ async def vocabs(request: Request):
             context = get_page(session, cursor)
             return templates.TemplateResponse(request, 'vocab_rows.html', context)
         context = get_page(session)
+        context['archiver'] = Archiver.get()
     return templates.TemplateResponse(request, 'index.html', context)
 
 
@@ -251,6 +253,7 @@ async def vocabs_delete_bulk(request: Request):
             session.commit()
         # TODO flash('Deleted Vocabs!')
         context = get_page(session)
+        context['archiver'] = Archiver.get()
     return templates.TemplateResponse(request, 'index.html', context)
 
 
@@ -259,21 +262,26 @@ async def start_archive(request: Request):
     start the (async) archive process and pass {it /
     its status} into the archive_ui template response
     """
-    raise NotImplementedError
+    archiver = Archiver.get()
+    archiver.run()
+    return templates.TemplateResponse(request, 'archive_ui.html', {'archiver': archiver})
 
 
 async def archive_status(request: Request):
     """
     re-render archive_ui.html with the archive process status
     """
-    raise NotImplementedError
+    archiver = Archiver.get()
+    return templates.TemplateResponse(request, 'archive_ui.html', {'archiver': archiver})
 
 
 async def archive_content(request: Request):
     """
     send the file the archiver created down to the client
     """
-    raise NotImplementedError
+    archiver = Archiver.get()
+    path = archiver.archive_file()
+    return FileResponse(path, filename='archive.json', content_disposition_type='attachment')
 
 
 async def reset_archive(request: Request):

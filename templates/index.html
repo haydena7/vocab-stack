@@ -2,47 +2,49 @@
 
 {% block content %}
 
-<form action="/vocabs" method="get" role="search">
-    <input id="search" type="search" name="q" value="{{ request.query_params.get('q') or '' }}" placeholder="Search"
-        hx-get="/vocabs"
-        hx-trigger="search, keyup delay:200ms changed"
-        hx-target="tbody"
-        hx-push-url="true"
-        hx-indicator="#spinner"/>
-    <img id="spinner" class="htmx-indicator"
-         src="/static/img/spinning-circles.svg"
-         alt="Request In Flight ..."/>
-    <input type="submit" value="Search"/>
-</form>
+    {% include 'archive_ui.html' %}
 
-<form id="checked-vocabs">
-    <table class="striped">
-        <thead>
-            <tr>
-                <th scope="col"></th>
-                <th scope="col">Word</th>
-                <th scope="col">Context</th>
-                <th scope="col">Source</th>
-                <th scope="col">Zipf</th>
-                <th scope="col"></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% include 'vocab_rows.html' %}
-        </tbody>
-    </table>
-    <button hx-delete="/vocabs"
-            hx-target="body"
-            hx-confirm="Are you sure you want to delete these vocabs?">
-        Bulk Delete
-    </button>
-</form>
+    <form action="/vocabs" method="get" role="search">
+        <input id="search" type="search" name="q" value="{{ request.query_params.get('q') or '' }}" placeholder="Search"
+            hx-get="/vocabs"
+            hx-trigger="search, keyup delay:200ms changed"
+            hx-target="tbody"
+            hx-push-url="true"
+            hx-indicator="#spinner"/>
+        <img id="spinner" class="htmx-indicator"
+            src="/static/img/spinning-circles.svg"
+            alt="Request In Flight ..."/>
+        <input type="submit" value="Search"/>
+    </form>
 
-<p>
-    <a href="/vocabs/new">Add Vocab</a>
-    <span hx-get="/vocabs/count" hx-trigger="revealed">
-        <img id="spinner" class="htmx-indicator" src="/static/img/spinning-circles.svg"/>
-    </span>
-</p>
+    <form id="checked-vocabs">
+        <table class="striped">
+            <thead>
+                <tr>
+                    <th scope="col"></th>
+                    <th scope="col">Word</th>
+                    <th scope="col">Context</th>
+                    <th scope="col">Source</th>
+                    <th scope="col">Zipf</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% include 'vocab_rows.html' %}
+            </tbody>
+        </table>
+        <button hx-delete="/vocabs"
+                hx-target="body"
+                hx-confirm="Are you sure you want to delete these vocabs?">
+            Bulk Delete
+        </button>
+    </form>
+
+    <p>
+        <a href="/vocabs/new">Add Vocab</a>
+        <span hx-get="/vocabs/count" hx-trigger="revealed">
+            <img id="spinner" class="htmx-indicator" src="/static/img/spinning-circles.svg"/>
+        </span>
+    </p>
 
 {% endblock %}

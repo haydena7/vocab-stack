@@ -34,7 +34,7 @@ class Archiver:
         Archiver.archive_status = "Complete"
 
     def archive_file(self):
-        return 'contacts.json'
+        return 'vocabs.json'
 
     def reset(self):
         Archiver.archive_status = "Waiting"

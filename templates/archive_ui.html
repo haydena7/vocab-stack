@@ -1,0 +1,22 @@
+<div id="archive-ui" hx-target="this" hx-swap="outerHTML">
+    {% if archiver.status() == "Waiting" %}
+        <button hx-post="/vocabs/archive">
+            Download Archive
+        </button>
+    {% elif archiver.status() == "Running" %}
+        <div hx-get="/vocabs/archive" hx-trigger="load delay:500ms">
+            Creating archive ...
+            <div class="progress">
+                <div class="progress-bar"
+                    role="progressbar"
+                    aria-valuenow="{{ archiver.progress() * 100 }}"
+                    style="width:{{ archiver.progress() * 100 }}%">
+                </div>
+            </div>
+        </div>
+    {% elif archiver.status() == "Complete" %}
+        <a hx-boost="false" href="/vocabs/archive/file">
+            Archive ready! Click here to download. &downarrow;
+        </a>
+    {% endif %}
+</div>
