@@ -288,7 +288,9 @@ async def reset_archive(request: Request):
     """
     reset the archive process and re-render archive_ui.html
     """
-    raise NotImplementedError
+    archiver = Archiver.get()
+    archiver.reset()
+    return templates.TemplateResponse(request, 'archive_ui.html', {'archiver': archiver})
 
 
 routes = [
