@@ -12,5 +12,8 @@ wheels/
 # SQLite database
 *.db
 
+# Archiver-generated file
+vocabs.json
+
 # macOS system files
 .DS_Store
