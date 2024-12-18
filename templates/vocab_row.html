@@ -5,11 +5,19 @@
     <td>{{ vocab.source }}</td>
     <td>{{ "%.2f"|format(vocab.freq) }}</td>
     <td>
-        <a href="/vocabs/{{ vocab.id }}/edit">Edit</a>
-        <a href="/vocabs/{{ vocab.id }}">View</a>
-        <a href="#" hx-delete="/vocabs/{{ vocab.id }}"
-           hx-swap="outerHTML swap:1s"
-           hx-confirm="Are you sure you want to delete this vocab?"
-           hx-target="closest tr">Delete</a>
+        <div data-overflow-menu>
+            <button type="button" aria-haspopup="menu" aria-controls="vocab-menu-{{ vocab.id }}">
+                Options
+            </button>
+            <div role="menu" hidden id="vocab-menu-{{ vocab.id }}">
+                <a role="menuitem" href="/vocabs/{{ vocab.id }}/edit">Edit</a>
+                <a role="menuitem" href="/vocabs/{{ vocab.id }}">View</a>
+                <a role="menuitem" href="#"
+                   hx-delete="/vocabs/{{ vocab.id }}"
+                   hx-confirm="Are you sure you want to delete this vocab?"
+                   hx-swap="outerHTML swap:1s"
+                   hx-target="closest tr">Delete</a>
+            </div>
+        </div>
     </td>
 </tr>
