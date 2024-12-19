@@ -293,14 +293,6 @@ async def reset_archive(request: Request):
     """
     reset the archive process and re-render archive_ui.html
     """
-async def json_vocabs(request: Request):
-    with Session(engine) as session:
-        vocabs = session.exec(select(Vocab)).all()
-    vocabs_dicts = [v.model_dump(mode='json') for v in vocabs]
-    return JSONResponse({'vocabs': vocabs_dicts})
-
-
-async def json_vocabs_new(request: Request):
     archiver = Archiver.get()
     archiver.reset()
     return templates.TemplateResponse(request, 'archive_ui.html', {'archiver': archiver})
@@ -314,6 +306,27 @@ async def json_vocabs(request: Request):
 
 
 async def json_vocabs_new(request: Request):
+    new_fields = await request.json()
+    if 'word' in new_fields:
+        # TODO: fix once validation strategy determined
+        new_fields['freq'] = zipf(new_fields['word'])
+    new_vocab = Vocab(**new_fields)
+    with Session(engine) as session:
+        try:
+            session.add(new_vocab)
+            session.commit()
+            session.refresh(new_vocab)
+            return JSONResponse(new_vocab.model_dump(mode='json'))
+        except Exception as e:
+            session.rollback()
+            print(f'An error occurred: {e}')
+            e_dict = {
+                'error': type(e).__name__,
+                'message': str(e)
+            }
+            return JSONResponse(e_dict, status_code=400)
+
+
 routes = [
     Route('/', homepage),
     Route('/vocabs', vocabs),
@@ -326,13 +339,13 @@ routes = [
     Route('/vocabs/{vocab_id:int}/word', vocab_word_validation),
     Route('/vocabs/count', vocabs_count),
     Route('/vocabs', vocabs_delete_bulk, methods=['DELETE']),
-    Route('/api/v1/vocabs', json_vocabs, methods=['GET']),
     Route('/vocabs/new/word', vocab_word_validation),
     Route('/vocabs/archive', start_archive, methods=['POST']),
     Route('/vocabs/archive', archive_status, methods=['GET']),
     Route('/vocabs/archive', reset_archive, methods=['DELETE']),
     Route('/vocabs/archive/file', archive_content),
     Route('/api/v1/vocabs', json_vocabs, methods=['GET']),
+    Route('/api/v1/vocabs', json_vocabs_new, methods=['POST']),
     Mount('/static', StaticFiles(directory='static'), name='static'),
 ]
 
