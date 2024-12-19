@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="color-scheme" content="light dark">
+        <link rel="stylesheet" href="https://the.missing.style/v0.2.0/missing.min.css" />
         <link href="{{ url_for('static', path='/site.css') }}" rel="stylesheet" />
         <script
             src="https://unpkg.com/htmx.org@2.0.4"
@@ -12,6 +13,7 @@
         </script>
         <script src="https://unpkg.com/hyperscript.org@0.9.13"></script>
         <script src="{{ url_for('static', path='/js/rsjs-menu.js') }}" type="module"></script>
+        <script src="//unpkg.com/alpinejs" defer></script>
         <title>Vocab Stack</title>
     </head>
     <body hx-boost="true">

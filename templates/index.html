@@ -17,7 +17,21 @@
         <input type="submit" value="Search"/>
     </form>
 
-    <form id="checked-vocabs">
+    <form x-data="{ selected: [] }">
+    <template x-if="selected.length > 0">
+        <div class="box info tool-bar">
+            <slot x-text="selected.length"></slot>
+            vocabs selected
+
+            <button type="button" class="bad bg color border"
+                @click="confirm(`Delete ${selected.length} vocabs?`) &&
+                    htmx.ajax('DELETE', '/vocabs', { source: $root, target: document.body })">
+                Delete
+            </button>
+            <hr aria-orientation="vertical">
+            <button type="button" @click="selected = []">Cancel</button>
+        </div>
+    </template>
         <table class="striped">
             <thead>
                 <tr>
