@@ -17,7 +17,12 @@ from sqlmodel import (
 from starlette.applications import Starlette
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
-from starlette.responses import FileResponse, PlainTextResponse, RedirectResponse
+from starlette.responses import (
+    FileResponse,
+    JSONResponse,
+    PlainTextResponse,
+    RedirectResponse,
+)
 from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
@@ -288,11 +293,27 @@ async def reset_archive(request: Request):
     """
     reset the archive process and re-render archive_ui.html
     """
+async def json_vocabs(request: Request):
+    with Session(engine) as session:
+        vocabs = session.exec(select(Vocab)).all()
+    vocabs_dicts = [v.model_dump(mode='json') for v in vocabs]
+    return JSONResponse({'vocabs': vocabs_dicts})
+
+
+async def json_vocabs_new(request: Request):
     archiver = Archiver.get()
     archiver.reset()
     return templates.TemplateResponse(request, 'archive_ui.html', {'archiver': archiver})
 
 
+async def json_vocabs(request: Request):
+    with Session(engine) as session:
+        vocabs = session.exec(select(Vocab)).all()
+    vocabs_dicts = [v.model_dump(mode='json') for v in vocabs]
+    return JSONResponse({'vocabs': vocabs_dicts})
+
+
+async def json_vocabs_new(request: Request):
 routes = [
     Route('/', homepage),
     Route('/vocabs', vocabs),
@@ -305,11 +326,13 @@ routes = [
     Route('/vocabs/{vocab_id:int}/word', vocab_word_validation),
     Route('/vocabs/count', vocabs_count),
     Route('/vocabs', vocabs_delete_bulk, methods=['DELETE']),
+    Route('/api/v1/vocabs', json_vocabs, methods=['GET']),
     Route('/vocabs/new/word', vocab_word_validation),
     Route('/vocabs/archive', start_archive, methods=['POST']),
     Route('/vocabs/archive', archive_status, methods=['GET']),
     Route('/vocabs/archive', reset_archive, methods=['DELETE']),
     Route('/vocabs/archive/file', archive_content),
+    Route('/api/v1/vocabs', json_vocabs, methods=['GET']),
     Mount('/static', StaticFiles(directory='static'), name='static'),
 ]
 
