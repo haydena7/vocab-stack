@@ -327,6 +327,14 @@ async def json_vocabs_new(request: Request):
             return JSONResponse(e_dict, status_code=400)
 
 
+async def json_vocabs_view(request: Request):
+    vid = request.path_params['vocab_id']
+    # TODO: use .get() on path_params to handle None exception ?
+    with Session(engine) as session:
+        v = session.get(Vocab, vid)
+    return JSONResponse(v.model_dump(mode='json'))
+
+
 routes = [
     Route('/', homepage),
     Route('/vocabs', vocabs),
@@ -346,6 +354,7 @@ routes = [
     Route('/vocabs/archive/file', archive_content),
     Route('/api/v1/vocabs', json_vocabs, methods=['GET']),
     Route('/api/v1/vocabs', json_vocabs_new, methods=['POST']),
+    Route('/api/v1/vocabs/{vocab_id:int}', json_vocabs_view),
     Mount('/static', StaticFiles(directory='static'), name='static'),
 ]
 
