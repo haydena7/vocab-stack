@@ -327,25 +327,21 @@ async def json_vocabs(request: Request):
 
 
 async def json_vocabs_new(request: Request):
-    new_fields = await request.json()
-    if 'word' in new_fields:
+    new_bytes = await request.body()
+    try:
+        new = VocabCreate.model_validate_json(new_bytes)
+    except Exception as e:
+        return JSONResponse({'error': str(e)}, status_code=400)
+    new_data = new.model_dump(exclude_unset=True)
+    if 'word' in new_data:
         # TODO: fix once validation strategy determined
-        new_fields['freq'] = zipf(new_fields['word'])
-    new_vocab = Vocab(**new_fields)
+        new_data['freq'] = zipf(new_data['word'])
+    new_vocab = Vocab.model_validate(new_data)
     with Session(engine) as session:
-        try:
-            session.add(new_vocab)
-            session.commit()
-            session.refresh(new_vocab)
-            return JSONResponse(new_vocab.model_dump(mode='json'))
-        except Exception as e:
-            session.rollback()
-            print(f'An error occurred: {e}')
-            e_dict = {
-                'error': type(e).__name__,
-                'message': str(e)
-            }
-            return JSONResponse(e_dict, status_code=400)
+        session.add(new_vocab)
+        session.commit()
+        session.refresh(new_vocab)
+        return JSONResponse(new_vocab.model_dump(mode='json'))
 
 
 async def json_vocabs_view(request: Request):
