@@ -363,9 +363,9 @@ async def json_vocabs_edit(request: Request):
         update = VocabUpdate.model_validate_json(update_bytes)
     except Exception as e:
         e_dict = {
-                'error': type(e).__name__,
-                'message': str(e)
-            }
+            'error': type(e).__name__,
+            'message': str(e)
+        }
         return JSONResponse(e_dict, status_code=400)
     with Session(engine) as session:
         db_vocab = session.get(Vocab, vocab_id)
