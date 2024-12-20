@@ -356,6 +356,33 @@ async def json_vocabs_view(request: Request):
     return JSONResponse(v.model_dump(mode='json'))
 
 
+async def json_vocabs_edit(request: Request):
+    vocab_id = request.path_params['vocab_id']
+    update_bytes = await request.body()
+    try:
+        update = VocabUpdate.model_validate_json(update_bytes)
+    except Exception as e:
+        e_dict = {
+                'error': type(e).__name__,
+                'message': str(e)
+            }
+        return JSONResponse(e_dict, status_code=400)
+    with Session(engine) as session:
+        db_vocab = session.get(Vocab, vocab_id)
+        if not db_vocab:
+            raise HTTPException(status_code=404, detail='Vocab not found')
+        update_data = update.model_dump(exclude_unset=True)
+        if 'word' in update_data:
+            # word changed; update frequency
+            update_data['freq'] = zipf(update_data['word'])
+        db_vocab.sqlmodel_update(update_data)
+        session.add(db_vocab)
+        session.commit()
+        session.refresh(db_vocab)
+    # TODO: somehow mark `response_model` as VocabPublic
+    return JSONResponse(db_vocab.model_dump(mode='json'))
+
+
 routes = [
     Route('/', homepage),
     Route('/vocabs', vocabs),
@@ -376,6 +403,7 @@ routes = [
     Route('/api/v1/vocabs', json_vocabs, methods=['GET']),
     Route('/api/v1/vocabs', json_vocabs_new, methods=['POST']),
     Route('/api/v1/vocabs/{vocab_id:int}', json_vocabs_view),
+    Route('/api/v1/vocabs/{vocab_id:int}', json_vocabs_edit, methods=['PUT']),
     Mount('/static', StaticFiles(directory='static'), name='static'),
 ]
 
