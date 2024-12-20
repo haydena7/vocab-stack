@@ -379,6 +379,17 @@ async def json_vocabs_edit(request: Request):
     return JSONResponse(db_vocab.model_dump(mode='json'))
 
 
+async def json_vocabs_delete(request: Request):
+    vocab_id = request.path_params['vocab_id']
+    with Session(engine) as session:
+        vocab = session.get(Vocab, vocab_id)
+        if not vocab:
+            raise HTTPException(status_code=404, detail='Vocab not found')
+        session.delete(vocab)
+        session.commit()
+    return JSONResponse({'success': True})
+
+
 routes = [
     Route('/', homepage),
     Route('/vocabs', vocabs),
@@ -400,6 +411,7 @@ routes = [
     Route('/api/v1/vocabs', json_vocabs_new, methods=['POST']),
     Route('/api/v1/vocabs/{vocab_id:int}', json_vocabs_view),
     Route('/api/v1/vocabs/{vocab_id:int}', json_vocabs_edit, methods=['PUT']),
+    Route('/api/v1/vocabs/{vocab_id:int}', json_vocabs_delete, methods=['DELETE']),
     Mount('/static', StaticFiles(directory='static'), name='static'),
 ]
 
