@@ -345,11 +345,12 @@ async def json_vocabs_new(request: Request):
 
 
 async def json_vocabs_view(request: Request):
-    vid = request.path_params['vocab_id']
-    # TODO: use .get() on path_params to handle None exception ?
+    vocab_id = request.path_params['vocab_id']
     with Session(engine) as session:
-        v = session.get(Vocab, vid)
-    return JSONResponse(v.model_dump(mode='json'))
+        vocab = session.get(Vocab, vocab_id)
+        if not vocab:
+            raise HTTPException(status_code=404, detail="Vocab not found")
+    return JSONResponse(vocab.model_dump(mode='json'))
 
 
 async def json_vocabs_edit(request: Request):
