@@ -333,10 +333,8 @@ async def json_vocabs_new(request: Request):
     except Exception as e:
         return JSONResponse({'error': str(e)}, status_code=400)
     new_data = new.model_dump(exclude_unset=True)
-    if 'word' in new_data:
-        # TODO: fix once validation strategy determined
-        new_data['freq'] = zipf(new_data['word'])
-    new_vocab = Vocab.model_validate(new_data)
+    new_data['freq'] = zipf(new_data['word'])
+    new_vocab = Vocab(**new_data)
     with Session(engine) as session:
         session.add(new_vocab)
         session.commit()
