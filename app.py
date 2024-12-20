@@ -46,6 +46,27 @@ class Vocab(SQLModel, table=True):
     created_at: date = Field(default_factory=date.today)
 
 
+class VocabCreate(SQLModel):
+    word: str
+    context: str | None = None
+    source: str | None = None
+
+
+class VocabPublic(SQLModel):
+    id: int
+    word: str
+    context: str | None = None
+    source: str | None = None
+    freq: float
+    created_at: date
+
+
+class VocabUpdate(SQLModel):
+    word: str | None = None
+    context: str | None = None
+    source: str | None = None
+
+
 sqlite_fname = 'database.db'
 sqlite_url = f'sqlite:///{sqlite_fname}'
 
